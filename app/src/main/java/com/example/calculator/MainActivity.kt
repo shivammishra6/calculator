@@ -7,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -24,7 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,12 +52,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Calculator(modifier: Modifier = Modifier) {
     var displayText by remember { mutableStateOf("") }
-    val small = dimensionResource(id = R.dimen.small)
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(4.dp)
     ) {
+
         TextField(
             value = displayText,
             onValueChange = { displayText = it },
@@ -69,8 +69,8 @@ fun Calculator(modifier: Modifier = Modifier) {
             ),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(28.dp)
-                .weight(1.4f)
+                .padding(24.dp)
+                .weight(1.5f)
         )
 
         val buttons = listOf(
@@ -91,17 +91,35 @@ fun Calculator(modifier: Modifier = Modifier) {
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     row.forEach { buttonText ->
-                        CalculatorButton(buttonText) {
-                            displayText = when (buttonText) {
-                                "=" -> {
-                                    // Evaluate the expression
-                                    evaluate(displayText)
+                        when (buttonText) {
+                            "=" -> {
+                                CalculatorButton(text = buttonText, "blue") {
+                                    displayText = evaluate(displayText)
                                 }
+                            }
 
-                                "C" -> ""
-                                "X" -> displayText.dropLast(1)
-                                else -> {
-                                    addCharacterToInput(displayText, buttonText)
+                            "X", "C", "+", "*", "/", "%", "-" -> {
+                                when (buttonText) {
+                                    "X" -> CalculatorButton(
+                                        text = buttonText,
+                                        "black"
+                                    ) { displayText = displayText.dropLast(1) }
+
+                                    "C" -> CalculatorButton(
+                                        text = buttonText,
+                                        "black"
+                                    ) { displayText = "" }
+
+                                    else -> CalculatorButton(
+                                        text = buttonText,
+                                        "black"
+                                    ) { displayText = addCharacterToInput(displayText, buttonText) }
+                                }
+                            }
+
+                            else -> {
+                                CalculatorButton(text = buttonText, "") {
+                                    displayText = addCharacterToInput(displayText, buttonText)
                                 }
                             }
                         }
@@ -113,8 +131,8 @@ fun Calculator(modifier: Modifier = Modifier) {
 }
 
 fun addCharacterToInput(currentInput: String, newChar: String): String {
-    val operators = setOf('.','+', '-', '*', '/', '%')
-    val sOperators = setOf(".","+", "-", "*", "/", "%")
+    val operators = setOf('.', '+', '-', '*', '/', '%')
+    val sOperators = setOf(".", "+", "-", "*", "/", "%")
     return if (currentInput.isNotEmpty() && currentInput.last() in operators && newChar in sOperators) {
         // Ignore the new operator
         currentInput
@@ -146,17 +164,27 @@ fun evaluate(displayText: String): String {
 }
 
 @Composable
-fun CalculatorButton(text: String, onClick: () -> Unit) {
+fun CalculatorButton(
+    text: String,
+    colour: String,
+    onClick: () -> Unit
+) {
     Button(
         onClick = onClick,
         modifier = Modifier
-            .height(76.dp)
-            .width(76.dp),
+            .height(72.dp)
+            .width(72.dp),
+        colors = when (colour) {
+            "blue" -> ButtonDefaults.buttonColors(Color.Blue)
+            "black" -> ButtonDefaults.buttonColors(Color.Black)
+            else -> ButtonDefaults.buttonColors(Color(225,225,225))
+        },
         shape = CircleShape
     ) {
         Text(
             text = text,
-            fontSize = 24.sp
+            color = if (colour == "") Color.Black else Color.White,
+            fontSize = 20.sp
         )
     }
 }
