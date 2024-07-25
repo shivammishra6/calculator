@@ -32,7 +32,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calculator.ui.theme.CalculatorTheme
-import net.objecthunter.exp4j.Expression
 import net.objecthunter.exp4j.ExpressionBuilder
 
 
@@ -55,7 +54,7 @@ class MainActivity : ComponentActivity() {
 fun Calculator(modifier: Modifier = Modifier) {
     var displayText by remember { mutableStateOf("") }
 
-    val small= dimensionResource(id = R.dimen.small)
+    val small = dimensionResource(id = R.dimen.small)
 
     Column(
         modifier = modifier
@@ -84,6 +83,7 @@ fun Calculator(modifier: Modifier = Modifier) {
             listOf("00", "0", ".", "=")
         )
 
+
         buttons.forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -91,14 +91,16 @@ fun Calculator(modifier: Modifier = Modifier) {
             ) {
                 row.forEach { buttonText ->
                     CalculatorButton(buttonText) {
-                        when (buttonText) {
+                            displayText = when (buttonText) {
                             "=" -> {
                                 // Evaluate the expression
-                                displayText = evaluate(displayText)
+                                evaluate(displayText)
                             }
-                            "C" -> displayText = ""
+
+                            "C" -> ""
+                            "X"-> displayText.dropLast(1)
                             else -> {
-                                displayText += buttonText
+                                addCharacterToInput(displayText,buttonText)
                             }
                         }
                     }
@@ -108,13 +110,31 @@ fun Calculator(modifier: Modifier = Modifier) {
     }
 }
 
+fun addCharacterToInput(currentInput: String, newChar: String): String {
+    val operators = setOf('+', '-', '*', '/', '%')
+    val sOperators = setOf("+","-","*","/","%")
+    return if (currentInput.isNotEmpty() && currentInput.last() in operators && newChar in sOperators) {
+        // Ignore the new operator
+        currentInput
+    } else {
+        // Add the new character
+        currentInput + newChar
+    }
+}
+
 fun evaluate(displayText: String): String {
-    val e = ExpressionBuilder(displayText).build()
-    val result=e.evaluate()
-    return if(result%1==0.0){
+    if(displayText.isEmpty())
+        return displayText
+    val char = displayText.last()
+    val string: String = if (char == '*' || char == '-' || char == '+' || char == '/' || char == '%')
+        displayText.dropLast(1)
+    else
+        displayText
+    val e = ExpressionBuilder(string).build()
+    val result = e.evaluate()
+    return if (result % 1 == 0.0) {
         result.toInt().toString()
-    }else
-    {
+    } else {
         result.toString()
     }
 }
