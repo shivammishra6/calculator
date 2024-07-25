@@ -4,9 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,28 +12,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calculator.ui.theme.CalculatorTheme
-import kotlinx.coroutines.launch
 import net.objecthunter.exp4j.ExpressionBuilder
 
 
@@ -57,37 +52,26 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Calculator(modifier: Modifier = Modifier) {
     var displayText by remember { mutableStateOf("") }
-    val scrollState = rememberScrollState()
     val small = dimensionResource(id = R.dimen.small)
-    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(small)
+            .padding(4.dp)
     ) {
-        BasicTextField(
+        TextField(
             value = displayText,
-            onValueChange = {
-                displayText = it
-                coroutineScope.launch {
-                    scrollState.scrollTo(scrollState.maxValue)
-                }
-            },
+            onValueChange = { displayText = it },
             readOnly = true,
-            singleLine = true,
-            textStyle = TextStyle(fontSize = 24.sp),
-            decorationBox = { innerTextField ->
-                Box(modifier = Modifier.background(Color.White)) {
-                    innerTextField()
-                }
-            },
+            singleLine = false,
+            textStyle = TextStyle(
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            ),
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(small)
+                .fillMaxSize()
+                .padding(28.dp)
+                .weight(1.4f)
         )
-
-        Spacer(modifier = Modifier.height(small))
 
         val buttons = listOf(
             listOf("C", "%", "X", "/"),
@@ -98,23 +82,27 @@ fun Calculator(modifier: Modifier = Modifier) {
         )
 
 
-        buttons.forEach { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                row.forEach { buttonText ->
-                    CalculatorButton(buttonText) {
-                        displayText = when (buttonText) {
-                            "=" -> {
-                                // Evaluate the expression
-                                evaluate(displayText)
-                            }
+        Column(Modifier.weight(2f)) {
+            buttons.forEach { row ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    row.forEach { buttonText ->
+                        CalculatorButton(buttonText) {
+                            displayText = when (buttonText) {
+                                "=" -> {
+                                    // Evaluate the expression
+                                    evaluate(displayText)
+                                }
 
-                            "C" -> ""
-                            "X" -> displayText.dropLast(1)
-                            else -> {
-                                addCharacterToInput(displayText, buttonText)
+                                "C" -> ""
+                                "X" -> displayText.dropLast(1)
+                                else -> {
+                                    addCharacterToInput(displayText, buttonText)
+                                }
                             }
                         }
                     }
@@ -125,8 +113,8 @@ fun Calculator(modifier: Modifier = Modifier) {
 }
 
 fun addCharacterToInput(currentInput: String, newChar: String): String {
-    val operators = setOf('+', '-', '*', '/', '%')
-    val sOperators = setOf("+", "-", "*", "/", "%")
+    val operators = setOf('.','+', '-', '*', '/', '%')
+    val sOperators = setOf(".","+", "-", "*", "/", "%")
     return if (currentInput.isNotEmpty() && currentInput.last() in operators && newChar in sOperators) {
         // Ignore the new operator
         currentInput
@@ -151,7 +139,7 @@ fun evaluate(displayText: String): String {
     val e = ExpressionBuilder(string).build()
     val result = e.evaluate()
     return if (result % 1 == 0.0) {
-        result.toInt().toString()
+        result.toLong().toString()
     } else {
         result.toString()
     }
@@ -162,11 +150,14 @@ fun CalculatorButton(text: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
-            .size(64.dp)
-            .padding(4.dp),
-        shape = RoundedCornerShape(8.dp)
+            .height(76.dp)
+            .width(76.dp),
+        shape = CircleShape
     ) {
-        Text(text = text, fontSize = 20.sp)
+        Text(
+            text = text,
+            fontSize = 24.sp
+        )
     }
 }
 
