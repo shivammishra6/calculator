@@ -49,8 +49,9 @@ android {
     }
 }
 
-dependencies {
 
+dependencies {
+    implementation(libs.exp4j)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
